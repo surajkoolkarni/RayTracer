@@ -1,0 +1,8 @@
+x64/
+*.obj
+*.ilk
+*.dll
+*.lib
+*.exe
+packages/
+.vs/
