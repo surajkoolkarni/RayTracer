@@ -4,5 +4,6 @@ x64/
 *.dll
 *.lib
 *.exe
+*.ppm
 packages/
 .vs/
