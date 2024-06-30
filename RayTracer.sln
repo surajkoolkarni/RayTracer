@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RayTracer", "RayTracer\RayT
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SphereRayTracer", "SphereRayTracer\SphereRayTracer.vcxproj", "{9FAC7004-3CA9-4ECD-92AA-EDF97D9B23E9}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TriangleTracer", "TriangleTracer\TriangleTracer.vcxproj", "{2C987000-E4E9-4800-AEEA-E993A2E07231}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -31,6 +33,14 @@ Global
 		{9FAC7004-3CA9-4ECD-92AA-EDF97D9B23E9}.Release|x64.Build.0 = Release|x64
 		{9FAC7004-3CA9-4ECD-92AA-EDF97D9B23E9}.Release|x86.ActiveCfg = Release|Win32
 		{9FAC7004-3CA9-4ECD-92AA-EDF97D9B23E9}.Release|x86.Build.0 = Release|Win32
+		{2C987000-E4E9-4800-AEEA-E993A2E07231}.Debug|x64.ActiveCfg = Debug|x64
+		{2C987000-E4E9-4800-AEEA-E993A2E07231}.Debug|x64.Build.0 = Debug|x64
+		{2C987000-E4E9-4800-AEEA-E993A2E07231}.Debug|x86.ActiveCfg = Debug|Win32
+		{2C987000-E4E9-4800-AEEA-E993A2E07231}.Debug|x86.Build.0 = Debug|Win32
+		{2C987000-E4E9-4800-AEEA-E993A2E07231}.Release|x64.ActiveCfg = Release|x64
+		{2C987000-E4E9-4800-AEEA-E993A2E07231}.Release|x64.Build.0 = Release|x64
+		{2C987000-E4E9-4800-AEEA-E993A2E07231}.Release|x86.ActiveCfg = Release|Win32
+		{2C987000-E4E9-4800-AEEA-E993A2E07231}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
