@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <fstream>
+#include <vector>
 
 #include "Triangle.h"
 
@@ -24,12 +25,13 @@ int main(int argc, char** argv)
     const uint32_t width = 640;
     const uint32_t height = 480;
     glm::vec3 cols[3] = { {0.6, 0.4, 0.1}, {0.1, 0.5, 0.3}, {0.1, 0.3, 0.7} };
-    glm::vec3* framebuffer = new glm::vec3[width * height];
-    glm::vec3* pix = framebuffer;
+    std::vector<glm::vec3> framebuffer(width * height, glm::vec3(0.f));
+    auto pix = framebuffer.begin();
     float fov = 51.52;
     float scale = tan(glm::radians(fov * 0.5));
     float imageAspectRatio = width / (float)height;
     glm::vec3 orig(0);
+    Triangle triangle(v0, v1, v2);
     for (uint32_t j = 0; j < height; ++j) {
         for (uint32_t i = 0; i < width; ++i) {
             // compute primary ray
@@ -38,11 +40,9 @@ int main(int argc, char** argv)
             glm::vec3 dir(x, y, -1);
             //cameraToWorld.multDirMatrix(glm::vec3(x, y, -1), dir);
             dir = glm::normalize(dir);
-            Triangle triangle(v0, v1, v2);
             float t;
             if (triangle.intersect(dir, orig, t)) {
-                *pix = triangle.baryCentric.u * cols[0] + triangle.baryCentric.v * cols[1] + (1 - triangle.baryCentric.u - triangle.baryCentric.v) * cols[2];
-                //*pix = glm::vec3(u, v, 1 - u - v);
+                *pix = triangle.baryCentric.u * cols[0] + triangle.baryCentric.v * cols[1] + (1.f - (triangle.baryCentric.u + triangle.baryCentric.v))  * cols[2];
             }
             pix++;
         }
@@ -59,8 +59,5 @@ int main(int argc, char** argv)
 
     ofs.close();
 
-    delete[] framebuffer;
-
     return 0;
-
 }

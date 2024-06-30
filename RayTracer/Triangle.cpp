@@ -1,38 +1,47 @@
 #include "Triangle.h"
 
+#include <cmath>
+
 Triangle::Triangle(const glm::vec3& p1_, const glm::vec3& p2_, const glm::vec3& p3_) :
     p1(p1_), p2(p2_), p3(p3_)
 {
-    normal = glm::normalize(glm::cross(p1 - p2, p1 - p3));
+    normal = glm::cross(p2 - p1, p3 - p1);
 }
 
 // barycentric coordinates
 bool Triangle::intersect(const glm::vec3& dir, const glm::vec3& origin, float& t) const
 {
     // calculate plane intersection first
-    
-    // check if ray direction and normal are parallel
-    // also enable back face culling
-
-    if (glm::dot(dir, normal) < 0)
+    float dirDotNormal = glm::dot(dir, normal);
+    if (fabs(dirDotNormal) < 1e-6)
         return false;
 
-    t = glm::dot((p1 - origin), normal) / glm::dot(dir, normal);
+    t = - (glm::dot(origin, normal) - glm::dot(p1, normal)) / dirDotNormal;
 
     // ray is behind triangle
+    // check if ray direction and normal are parallel
+    // also enable back face culling
     if (t < 0)
         return false;
 
     glm::vec3 intersection = origin + t * dir;
 
+    float NDotN = glm::dot(normal, normal);
+
     // check if the point is inside or not
-    if (baryCentric.u = glm::dot(glm::normalize(glm::cross(p2 - p1, intersection - p1)), normal) < 0)
+    baryCentric.u = glm::dot(glm::cross(p2 - p1, intersection - p1), normal) / NDotN;
+
+    if (baryCentric.u < 0 || baryCentric.u > 1)
         return false;
 
-    if (baryCentric.v = glm::dot(glm::normalize(glm::cross(p3 - p2, intersection - p2)), normal) < 0)
+    baryCentric.v = glm::dot(glm::cross(p3 - p2, intersection - p2), normal) / NDotN;
+
+    if (baryCentric.v < 0 || baryCentric.v > 1)
         return false;
 
-    if (baryCentric.w = glm::dot(glm::normalize(glm::cross(p1 - p3, intersection - p3)), normal) < 0)
+    baryCentric.w = glm::dot(glm::cross(p1 - p3, intersection - p3), normal) / NDotN;
+
+    if (baryCentric.w < 0 || baryCentric.w > 1)
         return false;
 
     return true;
