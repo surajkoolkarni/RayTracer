@@ -42,7 +42,7 @@ int main(int argc, char** argv)
             dir = glm::normalize(dir);
             float t;
             if (triangle.intersect(dir, orig, t)) {
-                *pix = triangle.baryCentric.u * cols[0] + triangle.baryCentric.v * cols[1] + (1.f - (triangle.baryCentric.u + triangle.baryCentric.v))  * cols[2];
+                *pix = triangle.baryCenter.u * cols[0] + triangle.baryCenter.v * cols[1] + (1.f - (triangle.baryCenter.u + triangle.baryCenter.v))  * cols[2];
             }
             pix++;
         }
