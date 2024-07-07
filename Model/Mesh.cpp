@@ -14,8 +14,8 @@ Mesh::Mesh(uint32_t id, aiMesh* mesh, aiMaterial* material) :
     material->Get(AI_MATKEY_COLOR_SPECULAR, m_material->specular);
     material->Get(AI_MATKEY_SHININESS, m_material->shininess);
 
-    loadTextures(material, aiTextureType_DIFFUSE, m_material->diffuseTextures);
-    loadTextures(material, aiTextureType_SPECULAR, m_material->specularTextures);
+    loadTextures(material, aiTextureType_DIFFUSE, m_material->diffuseTexture);
+    loadTextures(material, aiTextureType_SPECULAR, m_material->specularTexture);
 
     m_triangles = std::move(std::vector<std::shared_ptr<FacetTriangle>>(mesh->mNumFaces));
 
@@ -33,17 +33,17 @@ Mesh::Mesh(uint32_t id, aiMesh* mesh, aiMaterial* material) :
     }
 }
 
-void Mesh::loadTextures(aiMaterial* material, aiTextureType type, std::vector<std::string>& textures)
+void Mesh::loadTextures(aiMaterial* material, aiTextureType type, std::string& texture)
 {
     uint32_t textureCount = material->GetTextureCount(type);
-
-    textures = std::move(std::vector<std::string>(textureCount));
 
     for (size_t i = 0; i < textureCount; ++i)
     {
         aiString str;
         material->GetTexture(type, i, &str);
 
-        textures[i] = str.C_Str();
+        texture = str.C_Str();
+
+        break;
     }
 }

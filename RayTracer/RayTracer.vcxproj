@@ -46,7 +46,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -104,6 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)Primitives;$(SolutionDir)Model;$(SolutionDir)stb_image;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -118,6 +119,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)Primitives;$(SolutionDir)Model;$(SolutionDir)stb_image;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -130,27 +132,26 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="FacetTriangle.h" />
-    <ClInclude Include="IObject.h" />
-    <ClInclude Include="Material.h" />
-    <ClInclude Include="Ray.h" />
+    <ClInclude Include="IRayCaster.h" />
+    <ClInclude Include="ModelRayCaster.h" />
     <ClInclude Include="RayCast.h" />
     <ClInclude Include="RayTracerExport.h" />
-    <ClInclude Include="Sphere.h" />
-    <ClInclude Include="Transform.h" />
-    <ClInclude Include="Triangle.h" />
-    <ClInclude Include="Utils.h" />
-    <ClInclude Include="Vertex.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="FacetTriangle.cpp" />
-    <ClCompile Include="IObject.cpp" />
+    <ClCompile Include="IRayCaster.cpp" />
+    <ClCompile Include="ModelRayCaster.cpp" />
     <ClCompile Include="RayCast.cpp" />
-    <ClCompile Include="Sphere.cpp" />
-    <ClCompile Include="Transform.cpp" />
-    <ClCompile Include="Triangle.cpp" />
-    <ClCompile Include="Utils.cpp" />
-    <ClCompile Include="Vertex.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Model\Model.vcxproj">
+      <Project>{dd4f1f8c-6ef6-488c-a0a5-def7d470c686}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Primitives\Primitives.vcxproj">
+      <Project>{853ef931-7223-4426-a44d-9e6b0550014c}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\stb_image\stb_image.vcxproj">
+      <Project>{ed8a4e9d-4150-4229-a80b-a6ac74aea18d}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

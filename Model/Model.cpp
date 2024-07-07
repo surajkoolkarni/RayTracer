@@ -18,7 +18,7 @@ Model::Model(const std::string& path)
 void Model::loadModel(const std::string& path)
 {
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+    const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs);
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
@@ -46,7 +46,7 @@ void Model::processNode(aiNode* node, const aiScene* scene)
     }
 }
 
-void Model::loadTextureMaps(aiMaterial* material, aiTextureType type, std::map<std::string, unsigned char*>& textureMap)
+void Model::loadTextureMaps(aiMaterial* material, aiTextureType type, std::map<std::string, Image>& textureMap)
 {
     uint32_t textureCount = material->GetTextureCount(type);
 
@@ -60,7 +60,7 @@ void Model::loadTextureMaps(aiMaterial* material, aiTextureType type, std::map<s
         {
             int width, height, channels;
             unsigned char* data = stbi_load(str.C_Str(), &width, &height, &channels, 3);
-            textureMap[str.C_Str()] = data;
+            textureMap[str.C_Str()] = Image{ data, width, height, channels };
         }
     }
 }

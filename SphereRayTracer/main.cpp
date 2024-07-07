@@ -38,7 +38,7 @@ int main(int argc, char** argv)
 		glm::vec4(4.208271, 8.374532, 17.932925, 1));
 	camera->fov = fov;
 
-	std::unique_ptr<RayCaster> rayCaster = std::make_unique<RayCaster>(std::move(camera), width, height);
+	std::unique_ptr<IRayCaster> rayCaster = std::make_unique<RayCaster>(std::move(camera), width, height);
 	rayCaster->render(objects);
 
 	return 0;

@@ -18,9 +18,9 @@ public:
 	Mesh(uint32_t id, aiMesh* mesh, aiMaterial* material);
 
 private:
-	void loadTextures(aiMaterial* material, aiTextureType type, std::vector<std::string>& textures);
+	void loadTextures(aiMaterial* material, aiTextureType type, std::string& textures);
 
-private:
+public:
 	uint32_t m_id;
 	std::vector<std::shared_ptr<FacetTriangle>> m_triangles;
 	std::shared_ptr<Material> m_material;

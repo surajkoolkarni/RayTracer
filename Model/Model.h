@@ -5,6 +5,7 @@
 #include "Mesh.h"
 #include "FacetTriangle.h"
 #include "Material.h"
+#include "Image.h"
 
 #include <assimp/scene.h>
 
@@ -25,17 +26,18 @@ public:
     Model& operator=(const Model&) = delete;
     Model& operator=(Model&&) = default;
 
+    void render();
+
 private:
     void loadModel(const std::string& path);
 
     void processNode(aiNode* node, const aiScene* scene);
 
-    void loadTextureMaps(aiMaterial* material, aiTextureType type, std::map<std::string, unsigned char*>& textureMap);
+    void loadTextureMaps(aiMaterial* material, aiTextureType type, std::map<std::string, Image>& textureMap);
 
 public:
-    std::map<std::string, unsigned char*> m_diffuseMaps;
-    std::map<std::string, unsigned char*> m_specularMaps;
+    std::map<std::string, Image> m_diffuseMaps;
+    std::map<std::string, Image> m_specularMaps;
 
-private:
     std::vector<std::shared_ptr<Mesh>> m_meshes;
 };

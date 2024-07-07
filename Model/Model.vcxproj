@@ -31,8 +31,8 @@
     <ClCompile Include="Model.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\RayTracer\RayTracer.vcxproj">
-      <Project>{274dd874-650c-4620-a393-352cabf2a05c}</Project>
+    <ProjectReference Include="..\Primitives\Primitives.vcxproj">
+      <Project>{853ef931-7223-4426-a44d-9e6b0550014c}</Project>
     </ProjectReference>
     <ProjectReference Include="..\stb_image\stb_image.vcxproj">
       <Project>{ed8a4e9d-4150-4229-a80b-a6ac74aea18d}</Project>
@@ -133,7 +133,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)RayTracer;$(SolutionDir)stb_image;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Primitives;$(SolutionDir)stb_image;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -149,8 +149,9 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;MODEL_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(SolutionDir)Primitives;$(SolutionDir)stb_image;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
