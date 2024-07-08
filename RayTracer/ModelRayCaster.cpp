@@ -13,6 +13,7 @@ ModelRayCaster::ModelRayCaster(std::unique_ptr<Model> model, std::unique_ptr<Cam
 	m_width(width),
 	m_height(height)
 {
+	m_camera->cameraToWorld = std::move(Transform::cameraToWorld(m_camera->eye, m_camera->center, m_camera->up));
 }
 
 bool ModelRayCaster::trace(Ray& ray, const std::vector<std::shared_ptr<FacetTriangle>>& triangles, std::shared_ptr<FacetTriangle>& hitObject)
@@ -100,9 +101,9 @@ bool ModelRayCaster::CastRay(Ray& ray, std::shared_ptr<Mesh> mesh, aiColor3D& co
 
 	glm::vec3 reflectionDir = glm::reflect(-glm::normalize(lightPos - P), glm::vec3(normal.x, normal.y, normal.z));
 
-	float spec = pow(glm::max(glm::dot(glm::normalize(m_camera->eye - P), reflectionDir), 0.f), 32.f);
+	float spec = pow(glm::max(glm::dot(glm::normalize(m_camera->eye - P), reflectionDir), 0.f), material->shininess);
 
-	color = ambientLight + diffuse * diffuseLight; // + specular * spec * specularLight;
+	color = ambientLight + diffuse * diffuseLight + specular * spec * specularLight;
 
 	return true;
 }
@@ -131,23 +132,15 @@ void ModelRayCaster::serialize()
 	stbi_write_png("out.png", m_width, m_height, 3, m_pixels, m_width * 3);
 }
 
-glm::mat4 ModelRayCaster::CameraToWorld()
+glm::mat4 ModelRayCaster::CameraToWorld() const	
 {
-	static bool isMatrixCalculated = false;
-
-	if (!isMatrixCalculated)
-	{
-		isMatrixCalculated = true;
-		m_camera->cameraToWorld = std::move(Transform::cameraToWorld(m_camera->eye, m_camera->center, m_camera->up));
-	}
-
 	return m_camera->cameraToWorld;
 }
 
 int ModelRayCaster::GetIndex(const aiVector2D& texCoords, const Image& image)
 {
 	int x = static_cast<int>(texCoords.x * (image.width - 1));
-	int y = static_cast<int>(texCoords.y * (image.height - 1));
+	int y = static_cast<int>((1.f - texCoords.y) * (image.height - 1));
 	int index = (y * image.width + x) * image.channels;
 
 	return index;
@@ -155,6 +148,9 @@ int ModelRayCaster::GetIndex(const aiVector2D& texCoords, const Image& image)
 
 aiColor3D ModelRayCaster::GetColor(int index, const Image& image)
 {
+	if (!image.data || !strcmp((const char*)image.data, ""))
+		return aiColor3D(1., 1., 1.);
+
 	float R = image.data[index] / 255.0f;
 	float G = image.data[index + 1] / 255.0f;
 	float B = image.data[index + 2] / 255.0f;

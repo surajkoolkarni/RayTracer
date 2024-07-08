@@ -22,7 +22,7 @@ private:
 
 	void serialize();
 
-	glm::mat4 CameraToWorld();
+	glm::mat4 CameraToWorld() const;
 
 	aiColor3D CalculateColor(const std::shared_ptr<FacetTriangle> triangle, const Image& image);
 

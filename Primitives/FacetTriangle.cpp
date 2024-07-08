@@ -26,7 +26,7 @@ bool FacetTriangle::intersect(const glm::vec3& dir, const glm::vec3& origin, flo
     // ray is behind triangle
     // check if ray direction and normal are parallel
     // also enable back face culling
-    if (t < 0)
+    if (t < 1e-8)
         return false;
 
     glm::vec3 intersection = origin + t * dir;
@@ -41,7 +41,7 @@ bool FacetTriangle::intersect(const glm::vec3& dir, const glm::vec3& origin, flo
 
     baryCenter.v = glm::dot(glm::cross(ToVec3(p3.Position) - ToVec3(p2.Position), intersection - ToVec3(p2.Position)), normal) / NDotN;
 
-    if (baryCenter.v < 0 || baryCenter.v > 1)
+    if (baryCenter.v < 0 || baryCenter.v > 1 || baryCenter.u + baryCenter.v > 1.)
         return false;
 
     baryCenter.w = (1.f - baryCenter.u - baryCenter.v);
@@ -49,7 +49,7 @@ bool FacetTriangle::intersect(const glm::vec3& dir, const glm::vec3& origin, flo
     return true;
 }
 
-void FacetTriangle::GetSurfaceData(const glm::vec3& pHit, glm::vec3& nHit, glm::vec2& textCoord)
+void FacetTriangle::GetSurfaceData(const glm::vec3& pHit, glm::vec3& nHit, glm::vec2& texCoord)
 {
 }
 

@@ -15,6 +15,15 @@ Model::Model(const std::string& path)
     loadModel(path);
 }
 
+Model::~Model()
+{
+    for (auto i : m_diffuseMaps)
+        stbi_image_free(i.second.data);
+
+    for (auto i : m_specularMaps)
+        stbi_image_free(i.second.data);
+}
+
 void Model::loadModel(const std::string& path)
 {
     Assimp::Importer importer;
@@ -59,7 +68,16 @@ void Model::loadTextureMaps(aiMaterial* material, aiTextureType type, std::map<s
         if (textureMap.find(str.C_Str()) == textureMap.end())
         {
             int width, height, channels;
+
+            stbi_info(str.C_Str(), &width, &height, &channels);
+
+            std::cout << "Width:" << width << " Height:" << height << " Channels:" << channels << std::endl;
+
             unsigned char* data = stbi_load(str.C_Str(), &width, &height, &channels, 3);
+
+            if (stbi_failure_reason() && !data && !strcmp((const char*)data, ""))
+                std::cout << stbi_failure_reason() << std::endl;
+
             textureMap[str.C_Str()] = Image{ data, width, height, channels };
         }
     }

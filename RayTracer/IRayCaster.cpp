@@ -9,6 +9,7 @@ IRayCaster::IRayCaster(std::unique_ptr<Camera> camera, int width, int height) :
 	m_width(width),
 	m_height(height)
 {
+	m_camera->cameraToWorld = std::move(Transform::cameraToWorld(m_camera->eye, m_camera->center, m_camera->up));
 }
 
 void IRayCaster::render(const std::vector<std::shared_ptr<IObject>>& objects)
@@ -95,16 +96,8 @@ bool IRayCaster::trace(Ray& ray, const std::vector<std::shared_ptr<IObject>>& ob
 	return hitObject != nullptr;
 }
 
-glm::mat4 IRayCaster::CameraToWorld()
+glm::mat4 IRayCaster::CameraToWorld() const
 {
-	static bool isMatrixCalculated = false;
-
-	if (!isMatrixCalculated)
-	{
-		isMatrixCalculated = true;
-		m_camera->cameraToWorld = std::move(Transform::cameraToWorld(m_camera->eye, m_camera->center, m_camera->up));
-	}
-
 	return m_camera->cameraToWorld;
 }
 

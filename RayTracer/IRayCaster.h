@@ -49,7 +49,7 @@ private:
 	Ray GenerateRay(int x, int y);
 
 
-	glm::mat4 CameraToWorld();
+	glm::mat4 CameraToWorld() const;
 
 	float clamp(float min, float max, float value);
 

@@ -13,7 +13,7 @@ public:
 
 	bool intersect(const glm::vec3& dir, const glm::vec3& origin, float& t) const override;
 
-	void GetSurfaceData(const glm::vec3& pHit, glm::vec3& nHit, glm::vec2& textCoord) override;
+	void GetSurfaceData(const glm::vec3& pHit, glm::vec3& nHit, glm::vec2& texCoord) override;
 
 public:
 	Vertex p1;

@@ -26,6 +26,8 @@ public:
     Model& operator=(const Model&) = delete;
     Model& operator=(Model&&) = default;
 
+    ~Model();
+
     void render();
 
 private:
