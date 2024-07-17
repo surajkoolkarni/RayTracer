@@ -17,8 +17,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stb_image", "stb_image\stb_
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Primitives", "Primitives\Primitives.vcxproj", "{853EF931-7223-4426-A44D-9E6B0550014C}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ChatGpt", "ChatGpt\ChatGpt.vcxproj", "{9FE866F8-14B9-40BB-95F1-26864CF7455E}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -83,14 +81,6 @@ Global
 		{853EF931-7223-4426-A44D-9E6B0550014C}.Release|x64.Build.0 = Release|x64
 		{853EF931-7223-4426-A44D-9E6B0550014C}.Release|x86.ActiveCfg = Release|Win32
 		{853EF931-7223-4426-A44D-9E6B0550014C}.Release|x86.Build.0 = Release|Win32
-		{9FE866F8-14B9-40BB-95F1-26864CF7455E}.Debug|x64.ActiveCfg = Debug|x64
-		{9FE866F8-14B9-40BB-95F1-26864CF7455E}.Debug|x64.Build.0 = Debug|x64
-		{9FE866F8-14B9-40BB-95F1-26864CF7455E}.Debug|x86.ActiveCfg = Debug|Win32
-		{9FE866F8-14B9-40BB-95F1-26864CF7455E}.Debug|x86.Build.0 = Debug|Win32
-		{9FE866F8-14B9-40BB-95F1-26864CF7455E}.Release|x64.ActiveCfg = Release|x64
-		{9FE866F8-14B9-40BB-95F1-26864CF7455E}.Release|x64.Build.0 = Release|x64
-		{9FE866F8-14B9-40BB-95F1-26864CF7455E}.Release|x86.ActiveCfg = Release|Win32
-		{9FE866F8-14B9-40BB-95F1-26864CF7455E}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

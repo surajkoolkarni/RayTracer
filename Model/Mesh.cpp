@@ -3,7 +3,7 @@
 
 
 Mesh::Mesh(uint32_t id, aiMesh* mesh, aiMaterial* material) :
-	m_id(id)
+	m_id(id), m_aabb(mesh->mAABB)
 {
 	aiColor3D color;
 

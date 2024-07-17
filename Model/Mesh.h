@@ -24,4 +24,6 @@ public:
 	uint32_t m_id;
 	std::vector<std::shared_ptr<FacetTriangle>> m_triangles;
 	std::shared_ptr<Material> m_material;
+
+	aiAABB m_aabb;
 };

@@ -14,6 +14,28 @@ ModelRayCaster::ModelRayCaster(std::unique_ptr<Model> model, std::unique_ptr<Cam
 	m_height(height)
 {
 	m_camera->cameraToWorld = std::move(Transform::cameraToWorld(m_camera->eye, m_camera->center, m_camera->up));
+
+	//m_camera->frustrum = std::make_unique<Frustrum>();
+
+	//glm::vec3 front = m_camera->center - m_camera->eye;
+
+	//float aspect = 4.f / 3.f;
+	//const float halfVSide = zFar * tanf(m_camera->fov * .5f);
+	//const float halfHSide = halfVSide * aspect;
+	//const glm::vec3 frontMultFar = zFar * front;
+
+	//m_camera->frustrum->near = { m_camera->eye + zNear * front, front };
+	//m_camera->frustrum->far= { m_camera->eye + frontMultFar, -front };
+	//m_camera->frustrum->right= { cam.Position,
+	//						glm::cross(frontMultFar - cam.Right * halfHSide, cam.Up) };
+	//m_camera->frustrum->left= { cam.Position,
+	//						glm::cross(cam.Up,frontMultFar + cam.Right * halfHSide) };
+	//m_camera->frustrum->upper = { cam.Position,
+	//						glm::cross(cam.Right, frontMultFar - cam.Up * halfVSide) };
+	//m_camera->frustrum->lower = { cam.Position,
+	//						glm::cross(frontMultFar + cam.Up * halfVSide, cam.Right) };
+
+
 }
 
 bool ModelRayCaster::trace(Ray& ray, const std::vector<std::shared_ptr<FacetTriangle>>& triangles, std::shared_ptr<FacetTriangle>& hitObject)
@@ -48,8 +70,17 @@ void ModelRayCaster::render()
 		for (int i = 0; i < m_width; ++i)
 		{
 			Ray ray = GenerateRay(i, j);
+
+			int intersectingMeshId = IntersectingAABBId(ray);
+
+			if (intersectingMeshId == -1)
+				continue;
+
 			for (auto mesh : m_model->m_meshes)
 			{
+				if (mesh->m_id != intersectingMeshId)
+					continue;
+
 				aiColor3D color;
 				if (CastRay(ray, mesh, color))
 				{
@@ -156,6 +187,44 @@ aiColor3D ModelRayCaster::GetColor(int index, const Image& image)
 	float B = image.data[index + 2] / 255.0f;
 
 	return aiColor3D(R, G, B);
+}
+
+int ModelRayCaster::IntersectingAABBId(const Ray& ray)
+{
+	float tNear = std::numeric_limits<float>::max();
+	int id = -1;
+	for (auto mesh : m_model->m_meshes)
+	{
+		float t = std::numeric_limits<float>::max();
+		if (intersectsAABB(mesh, ray, t))
+		{
+			t = (mesh->m_aabb.mMin.x - ray.origin.x) / ray.dir.x;
+			if (t < tNear)
+			{
+				tNear = t;
+				id = mesh->m_id;
+			}
+		}
+	}
+
+	return id;
+}
+
+bool ModelRayCaster::intersectsAABB(const std::shared_ptr<Mesh> mesh, const Ray& ray, float& t)
+{
+	aiVector3D bmin = mesh->m_aabb.mMin;
+	aiVector3D bmax = mesh->m_aabb.mMax;
+
+	float tx1 = (bmin.x - ray.origin.x) / ray.dir.x, tx2 = (bmax.x - ray.origin.x) / ray.dir.x;
+	float tmin = fmin(tx1, tx2), tmax = fmax(tx1, tx2);
+
+	float ty1 = (bmin.y - ray.origin.y) / ray.dir.y, ty2 = (bmax.y - ray.origin.y) / ray.dir.y;
+	tmin = fmax(tmin, fmin(ty1, ty2)), tmax = fmin(tmax, fmax(ty1, ty2));
+
+	float tz1 = (bmin.z - ray.origin.z) / ray.dir.z, tz2 = (bmax.z - ray.origin.z) / ray.dir.z;
+	tmin = fmax(tmin, fmin(tz1, tz2)), tmax = fmin(tmax, fmax(tz1, tz2));
+
+	return tmax >= tmin && tmin < t && tmax > 0;
 }
 
 aiColor3D ModelRayCaster::CalculateColor(const std::shared_ptr<FacetTriangle> triangle, const Image& image)

@@ -30,6 +30,10 @@ private:
 
 	aiColor3D GetColor(int index, const Image& image);
 
+	int IntersectingAABBId(const Ray& ray);
+
+	bool intersectsAABB(const std::shared_ptr<Mesh> mesh, const Ray& ray, float& t);
+
 private:
 	std::unique_ptr<Camera> m_camera{};
 

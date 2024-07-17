@@ -21,6 +21,8 @@ struct Intersection
 	glm::vec3 normal;
 };
 
+struct Frustrum;
+
 struct Camera
 {
 	glm::vec3 eye;
@@ -30,6 +32,29 @@ struct Camera
 	float fov;
 
 	glm::mat4 cameraToWorld;
+
+	std::unique_ptr<Frustrum> frustrum;
+};
+
+struct Plane
+{
+	glm::vec3 normal;
+	glm::vec3 point;
+
+	float distance() const
+	{
+
+	}
+};
+
+struct Frustrum
+{
+	Plane near;
+	Plane far;
+	Plane upper;
+	Plane lower;
+	Plane right;
+	Plane left;
 };
 
 class RAY_TRACER_API IRayCaster
@@ -47,7 +72,6 @@ private:
 	glm::vec3 RayHitPixelToCamera(int x, int y);
 
 	Ray GenerateRay(int x, int y);
-
 
 	glm::mat4 CameraToWorld() const;
 
