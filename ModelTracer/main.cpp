@@ -20,10 +20,11 @@ int main()
 	//camera->up = glm::vec3(0.2501300083849314, 0.8490283395828082, -0.465387857051099);
 	//camera->fov = 30.f;
 
-	std::unique_ptr<ModelRayCaster> rayCaster = std::make_unique<ModelRayCaster>(std::move(model), std::move(camera), 1920, 1080);
+	std::unique_ptr<ModelRayCaster> rayCaster = std::make_unique<ModelRayCaster>(std::move(model), std::move(camera), 640, 480);
 	
 	auto timeStart = std::chrono::system_clock::now();
-	rayCaster->render();
+	rayCaster->Render();
+	rayCaster->Serialize("backpack.jpg");
 	auto timeReq = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - timeStart);
 
 	std::cout << "Time req to render: " << timeReq.count() << "sec" << std::endl;

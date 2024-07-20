@@ -14,31 +14,14 @@ ModelRayCaster::ModelRayCaster(std::unique_ptr<Model> model, std::unique_ptr<Cam
 	m_height(height)
 {
 	m_camera->cameraToWorld = std::move(Transform::cameraToWorld(m_camera->eye, m_camera->center, m_camera->up));
-
-	//m_camera->frustrum = std::make_unique<Frustrum>();
-
-	//glm::vec3 front = m_camera->center - m_camera->eye;
-
-	//float aspect = 4.f / 3.f;
-	//const float halfVSide = zFar * tanf(m_camera->fov * .5f);
-	//const float halfHSide = halfVSide * aspect;
-	//const glm::vec3 frontMultFar = zFar * front;
-
-	//m_camera->frustrum->near = { m_camera->eye + zNear * front, front };
-	//m_camera->frustrum->far= { m_camera->eye + frontMultFar, -front };
-	//m_camera->frustrum->right= { cam.Position,
-	//						glm::cross(frontMultFar - cam.Right * halfHSide, cam.Up) };
-	//m_camera->frustrum->left= { cam.Position,
-	//						glm::cross(cam.Up,frontMultFar + cam.Right * halfHSide) };
-	//m_camera->frustrum->upper = { cam.Position,
-	//						glm::cross(cam.Right, frontMultFar - cam.Up * halfVSide) };
-	//m_camera->frustrum->lower = { cam.Position,
-	//						glm::cross(frontMultFar + cam.Up * halfVSide, cam.Right) };
-
-
 }
 
-bool ModelRayCaster::trace(Ray& ray, const std::vector<std::shared_ptr<FacetTriangle>>& triangles, std::shared_ptr<FacetTriangle>& hitObject)
+ModelRayCaster::~ModelRayCaster()
+{
+	delete[] m_pixels;
+}
+
+bool ModelRayCaster::trace(Ray& ray, const std::vector<std::shared_ptr<FacetTriangle>>& triangles, std::shared_ptr<FacetTriangle>& hitTriangle)
 {
 	float tNear = std::numeric_limits<float>::max();
 	ray.t = std::numeric_limits<float>::max();
@@ -49,16 +32,16 @@ bool ModelRayCaster::trace(Ray& ray, const std::vector<std::shared_ptr<FacetTria
 		if (triangles[i]->intersect(ray.direction(), ray.origin, t) && t < tNear)
 		{
 			tNear = t;
-			hitObject = triangles[i];
+			hitTriangle = triangles[i];
 		}
 	}
 
 	ray.t = tNear;
 
-	return hitObject != nullptr;
+	return hitTriangle != nullptr;
 }
 
-void ModelRayCaster::render()
+void ModelRayCaster::Render()
 {
 	m_pixels = new unsigned char[m_width * m_height * 3];
 
@@ -105,10 +88,6 @@ void ModelRayCaster::render()
 			}
 		}
 	}
-
-	serialize();
-
-	delete[] m_pixels;
 }
 
 bool ModelRayCaster::CastRay(Ray& ray, std::shared_ptr<Mesh> mesh, glm::vec3& P, std::shared_ptr<FacetTriangle>& hitTriangle)
@@ -142,9 +121,14 @@ glm::vec3 ModelRayCaster::RayHitPixelToCamera(int x, int y)
 	return glm::vec3(Px, Py, -1);
 }
 
-void ModelRayCaster::serialize()
+void ModelRayCaster::Serialize(const std::string& fileName)
 {
-	stbi_write_png("out.png", m_width, m_height, 3, m_pixels, m_width * 3);
+	if (fileName.find(".png") != std::string::npos)
+		stbi_write_png(fileName.c_str(), m_width, m_height, 3, m_pixels, m_width * 3);
+	else if (fileName.find(".jpg") != std::string::npos)
+		stbi_write_jpg(fileName.c_str(), m_width, m_height, 3, m_pixels, 100);
+	else if (fileName.find(".bmp") != std::string::npos)
+		stbi_write_bmp(fileName.c_str(), m_width, m_height, 3, m_pixels);
 }
 
 glm::mat4 ModelRayCaster::CameraToWorld() const	
@@ -152,7 +136,7 @@ glm::mat4 ModelRayCaster::CameraToWorld() const
 	return m_camera->cameraToWorld;
 }
 
-int ModelRayCaster::GetIndex(const aiVector2D& texCoords, const Image& image)
+int ModelRayCaster::GetTextureIndex(const aiVector2D& texCoords, const Image& image)
 {
 	int x = static_cast<int>(texCoords.x * (image.width - 1));
 	int y = static_cast<int>((1.f - texCoords.y) * (image.height - 1));
@@ -161,7 +145,7 @@ int ModelRayCaster::GetIndex(const aiVector2D& texCoords, const Image& image)
 	return index;
 }
 
-aiColor3D ModelRayCaster::GetColor(int index, const Image& image)
+aiColor3D ModelRayCaster::GetColorFromImageData(int index, const Image& image)
 {
 	if (!image.data || !strcmp((const char*)image.data, ""))
 		return aiColor3D(1., 1., 1.);
@@ -171,19 +155,6 @@ aiColor3D ModelRayCaster::GetColor(int index, const Image& image)
 	float B = image.data[index + 2] / 255.0f;
 
 	return aiColor3D(R, G, B);
-}
-
-int ModelRayCaster::IntersectingAABBId(const Ray& ray, Direction dir)
-{
-	switch (dir)
-	{
-	case ModelRayCaster::X:
-		return CalculateId(ray, ModelRayCaster::X);
-	case ModelRayCaster::Y:
-		return CalculateId(ray, ModelRayCaster::Y);
-	case ModelRayCaster::Z:
-		return CalculateId(ray, ModelRayCaster::Z);
-	}
 }
 
 bool ModelRayCaster::intersectsAABB(const std::shared_ptr<Mesh> mesh, const Ray& ray, const float& t)
@@ -205,36 +176,11 @@ bool ModelRayCaster::intersectsAABB(const std::shared_ptr<Mesh> mesh, const Ray&
 
 aiColor3D ModelRayCaster::CalculateColor(const std::shared_ptr<FacetTriangle> triangle, const Image& image)
 {
-	int index1 = GetIndex(triangle->p1.TexCoords, image);
-	int index2 = GetIndex(triangle->p2.TexCoords, image);
-	int index3 = GetIndex(triangle->p3.TexCoords, image);
+	int index1 = GetTextureIndex(triangle->p1.TexCoords, image);
+	int index2 = GetTextureIndex(triangle->p2.TexCoords, image);
+	int index3 = GetTextureIndex(triangle->p3.TexCoords, image);
 
-	return GetColor(index1, image) * triangle->baryCenter.u + GetColor(index2, image) * triangle->baryCenter.v + GetColor(index3, image) * triangle->baryCenter.w;
-}
-
-int ModelRayCaster::CalculateId(const Ray& ray, Direction d)
-{
-	float tNear = std::numeric_limits<float>::max();
-	float t = std::numeric_limits<float>::max();
-	int id = -1;
-
-	for (auto mesh : m_model->m_meshes)
-	{
-		bool intersects = false;
-
-		if (intersectsAABB(mesh, ray, t))
-		{
-			t = (mesh->m_aabb.mMin[d] - ray.origin[d]) / ray.dir[d];
-
-			if (t < tNear)
-			{
-				tNear = t;
-				id = mesh->m_id;
-			}
-		}
-	}
-
-	return id;
+	return GetColorFromImageData(index1, image) * triangle->baryCenter.u + GetColorFromImageData(index2, image) * triangle->baryCenter.v + GetColorFromImageData(index3, image) * triangle->baryCenter.w;
 }
 
 aiColor3D ModelRayCaster::ComputeShading(const std::shared_ptr<Mesh> mesh, const std::shared_ptr<FacetTriangle> hitTriangle, const glm::vec3& P)
