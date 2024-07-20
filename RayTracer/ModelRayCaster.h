@@ -7,6 +7,12 @@
 class RAY_TRACER_API ModelRayCaster final
 {
 public:
+	enum Direction
+	{
+		X, Y, Z
+	};
+
+public:
 	ModelRayCaster(std::unique_ptr<Model> model, std::unique_ptr<Camera> camera, int width, int height);
 
 	void render();
@@ -18,7 +24,7 @@ private:
 
 	glm::vec3 RayHitPixelToCamera(int x, int y);
 
-	bool CastRay(Ray& ray, std::shared_ptr<Mesh> mesh, aiColor3D& color);
+	bool CastRay(Ray& ray, std::shared_ptr<Mesh> mesh, glm::vec3& P, std::shared_ptr<FacetTriangle>& hitTriangle);
 
 	void serialize();
 
@@ -30,9 +36,13 @@ private:
 
 	aiColor3D GetColor(int index, const Image& image);
 
-	int IntersectingAABBId(const Ray& ray);
+	int IntersectingAABBId(const Ray& ray, Direction dir);
 
-	bool intersectsAABB(const std::shared_ptr<Mesh> mesh, const Ray& ray, float& t);
+	bool intersectsAABB(const std::shared_ptr<Mesh> mesh, const Ray& ray, const float& t);
+
+	int CalculateId(const Ray& ray, Direction dir);
+
+	aiColor3D ComputeShading(const std::shared_ptr<Mesh> mesh, const std::shared_ptr<FacetTriangle> hitTriangle, const glm::vec3& P);
 
 private:
 	std::unique_ptr<Camera> m_camera{};

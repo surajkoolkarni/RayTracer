@@ -62,8 +62,9 @@ void ModelRayCaster::render()
 {
 	m_pixels = new unsigned char[m_width * m_height * 3];
 
-	std::fill(m_pixels, m_pixels + m_width * m_height * 3, 0.f);
+	std::fill(m_pixels, m_pixels + m_width * m_height * 3, 0);
 
+	std::shared_ptr<FacetTriangle> hitTriangle = nullptr;
 	for (int j = 0; j < m_height; ++j)
 	{
 		std::cout << "j: " << j << std::endl;
@@ -71,23 +72,36 @@ void ModelRayCaster::render()
 		{
 			Ray ray = GenerateRay(i, j);
 
-			int intersectingMeshId = IntersectingAABBId(ray);
-
-			if (intersectingMeshId == -1)
-				continue;
-
+			float distance = std::numeric_limits<float>::max();
+			std::shared_ptr<FacetTriangle> shadingTriangle = { nullptr };
+			std::shared_ptr<Mesh> shadingMesh = { nullptr };
+			glm::vec3 shadingPoint;
+			float tFar = 10000;
 			for (auto mesh : m_model->m_meshes)
 			{
-				if (mesh->m_id != intersectingMeshId)
+				if (!intersectsAABB(mesh, ray, tFar))
 					continue;
 
-				aiColor3D color;
-				if (CastRay(ray, mesh, color))
+				glm::vec3 P;
+				if (CastRay(ray, mesh, P, hitTriangle))
 				{
-					m_pixels[(j * m_width + i) * 3 + 0] = (unsigned char)(255 * glm::clamp(color.r, 0.f, 1.f));
-					m_pixels[(j * m_width + i) * 3 + 1] = (unsigned char)(255 * glm::clamp(color.g, 0.f, 1.f));
-					m_pixels[(j * m_width + i) * 3 + 2] = (unsigned char)(255 * glm::clamp(color.b, 0.f, 1.f));
+					float dist = glm::distance(P, ray.origin);
+					if (dist < distance)
+					{
+						distance = dist;
+						shadingTriangle = hitTriangle;
+						shadingMesh = mesh;
+						shadingPoint = P;
+					}
 				}
+			}
+
+			if (shadingTriangle && shadingMesh)
+			{
+				aiColor3D color = ComputeShading(shadingMesh, shadingTriangle, shadingPoint);
+				m_pixels[(j * m_width + i) * 3 + 0] = (unsigned char)(255 * glm::clamp(color.r, 0.f, 1.f));
+				m_pixels[(j * m_width + i) * 3 + 1] = (unsigned char)(255 * glm::clamp(color.g, 0.f, 1.f));
+				m_pixels[(j * m_width + i) * 3 + 2] = (unsigned char)(255 * glm::clamp(color.b, 0.f, 1.f));
 			}
 		}
 	}
@@ -97,44 +111,14 @@ void ModelRayCaster::render()
 	delete[] m_pixels;
 }
 
-bool ModelRayCaster::CastRay(Ray& ray, std::shared_ptr<Mesh> mesh, aiColor3D& color)
+bool ModelRayCaster::CastRay(Ray& ray, std::shared_ptr<Mesh> mesh, glm::vec3& P, std::shared_ptr<FacetTriangle>& hitTriangle)
 {
-	glm::vec3 lightPos(0.7f, 0.2f, 2.0f);
-	aiColor3D ambientLight(0.2, 0.2, 0.2);
-	aiColor3D diffuseLight(0.5, 0.5, 0.5);
-	aiColor3D specularLight(1.0f, 1.0f, 1.0f);
-
-	std::shared_ptr<FacetTriangle> hitTriangle = nullptr;
+	hitTriangle = nullptr;
 
 	if (!trace(ray, mesh->m_triangles, hitTriangle))
 		return false;
 
-	glm::vec3 P = ray.origin + ray.t * ray.direction();
-
-	aiVector3D normal = hitTriangle->baryCenter.u * hitTriangle->p1.Normal + hitTriangle->baryCenter.v * hitTriangle->p2.Normal + hitTriangle->baryCenter.w * hitTriangle->p3.Normal;
-	// Use the normal and texture coordinates to shade the hit point.
-	// The normal is used to calculate a simple facing ratio, and the texture coordinate
-	// to compute a basic checkerboard pattern.
-
-	std::shared_ptr<Material> material = mesh->m_material;
-
-	Image diffuseImage = m_model->m_diffuseMaps[material->diffuseTexture];
-	Image specularImage = m_model->m_specularMaps[material->specularTexture];
-
-	aiColor3D diffuse = material->diffuse;
-	aiColor3D specular = material->specular;
-
-	if (!material->diffuseTexture.empty())
-		diffuse = CalculateColor(hitTriangle, diffuseImage);
-		
-	if (!material->specularTexture.empty())
-		specular = CalculateColor(hitTriangle, specularImage);
-
-	glm::vec3 reflectionDir = glm::reflect(-glm::normalize(lightPos - P), glm::vec3(normal.x, normal.y, normal.z));
-
-	float spec = pow(glm::max(glm::dot(glm::normalize(m_camera->eye - P), reflectionDir), 0.f), material->shininess);
-
-	color = ambientLight + diffuse * diffuseLight + specular * spec * specularLight;
+	P = ray.origin + ray.t * ray.direction();
 
 	return true;
 }
@@ -189,28 +173,20 @@ aiColor3D ModelRayCaster::GetColor(int index, const Image& image)
 	return aiColor3D(R, G, B);
 }
 
-int ModelRayCaster::IntersectingAABBId(const Ray& ray)
+int ModelRayCaster::IntersectingAABBId(const Ray& ray, Direction dir)
 {
-	float tNear = std::numeric_limits<float>::max();
-	int id = -1;
-	for (auto mesh : m_model->m_meshes)
+	switch (dir)
 	{
-		float t = std::numeric_limits<float>::max();
-		if (intersectsAABB(mesh, ray, t))
-		{
-			t = (mesh->m_aabb.mMin.x - ray.origin.x) / ray.dir.x;
-			if (t < tNear)
-			{
-				tNear = t;
-				id = mesh->m_id;
-			}
-		}
+	case ModelRayCaster::X:
+		return CalculateId(ray, ModelRayCaster::X);
+	case ModelRayCaster::Y:
+		return CalculateId(ray, ModelRayCaster::Y);
+	case ModelRayCaster::Z:
+		return CalculateId(ray, ModelRayCaster::Z);
 	}
-
-	return id;
 }
 
-bool ModelRayCaster::intersectsAABB(const std::shared_ptr<Mesh> mesh, const Ray& ray, float& t)
+bool ModelRayCaster::intersectsAABB(const std::shared_ptr<Mesh> mesh, const Ray& ray, const float& t)
 {
 	aiVector3D bmin = mesh->m_aabb.mMin;
 	aiVector3D bmax = mesh->m_aabb.mMax;
@@ -234,4 +210,62 @@ aiColor3D ModelRayCaster::CalculateColor(const std::shared_ptr<FacetTriangle> tr
 	int index3 = GetIndex(triangle->p3.TexCoords, image);
 
 	return GetColor(index1, image) * triangle->baryCenter.u + GetColor(index2, image) * triangle->baryCenter.v + GetColor(index3, image) * triangle->baryCenter.w;
+}
+
+int ModelRayCaster::CalculateId(const Ray& ray, Direction d)
+{
+	float tNear = std::numeric_limits<float>::max();
+	float t = std::numeric_limits<float>::max();
+	int id = -1;
+
+	for (auto mesh : m_model->m_meshes)
+	{
+		bool intersects = false;
+
+		if (intersectsAABB(mesh, ray, t))
+		{
+			t = (mesh->m_aabb.mMin[d] - ray.origin[d]) / ray.dir[d];
+
+			if (t < tNear)
+			{
+				tNear = t;
+				id = mesh->m_id;
+			}
+		}
+	}
+
+	return id;
+}
+
+aiColor3D ModelRayCaster::ComputeShading(const std::shared_ptr<Mesh> mesh, const std::shared_ptr<FacetTriangle> hitTriangle, const glm::vec3& P)
+{
+	glm::vec3 lightPos(0.7f, 0.2f, 2.0f);
+	aiColor3D ambientLight(0.2, 0.2, 0.2);
+	aiColor3D diffuseLight(0.5, 0.5, 0.5);
+	aiColor3D specularLight(1.0f, 1.0f, 1.0f);
+
+	aiVector3D normal = hitTriangle->baryCenter.u * hitTriangle->p1.Normal + hitTriangle->baryCenter.v * hitTriangle->p2.Normal + hitTriangle->baryCenter.w * hitTriangle->p3.Normal;
+	// Use the normal and texture coordinates to shade the hit point.
+	// The normal is used to calculate a simple facing ratio, and the texture coordinate
+	// to compute a basic checkerboard pattern.
+
+	std::shared_ptr<Material> material = mesh->m_material;
+
+	Image diffuseImage = m_model->m_diffuseMaps[material->diffuseTexture];
+	Image specularImage = m_model->m_specularMaps[material->specularTexture];
+
+	aiColor3D diffuse = material->diffuse;
+	aiColor3D specular = material->specular;
+
+	if (!material->diffuseTexture.empty())
+		diffuse = CalculateColor(hitTriangle, diffuseImage);
+
+	if (!material->specularTexture.empty())
+		specular = CalculateColor(hitTriangle, specularImage);
+
+	glm::vec3 reflectionDir = glm::reflect(-glm::normalize(lightPos - P), glm::vec3(normal.x, normal.y, normal.z));
+
+	float spec = pow(glm::max(glm::dot(glm::normalize(m_camera->eye - P), reflectionDir), 0.f), material->shininess);
+
+	return ambientLight + diffuse * diffuseLight + specular * spec * specularLight;
 }
