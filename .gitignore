@@ -6,4 +6,4 @@ x64/
 *.exe
 *.ppm
 packages/
-.vs/
+.vs*/

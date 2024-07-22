@@ -4,9 +4,9 @@
 #include <chrono>
 #include <iostream>
 
-int main()
+int main(int argc, char** argv)
 {
-	std::unique_ptr<Model> model = std::make_unique<Model>("backpack.obj"); // space-shuttle-orbiter.obj
+	std::unique_ptr<Model> model = std::make_unique<Model>(argv[1]); // space-shuttle-orbiter.obj
 	//std::unique_ptr<Model> model = std::make_unique<Model>("space-shuttle-orbiter.obj");
 
 	std::unique_ptr<Camera> camera = std::make_unique<Camera>();
