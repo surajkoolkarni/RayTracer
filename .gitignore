@@ -1,5 +1,4 @@
-x64/
-*.obj
+x64/*.obj
 *.ilk
 *.dll
 *.lib
@@ -7,3 +6,4 @@ x64/
 *.ppm
 packages/
 .vs*/
+build/
